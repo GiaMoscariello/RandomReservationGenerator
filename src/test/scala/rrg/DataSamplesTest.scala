@@ -1,6 +1,6 @@
 package rrg
 
-import com.giamoscariello.rrg.model.DataSamples
+import com.giamoscariello.rrg.model.{DataSample, DataSamples}
 import org.mongodb.scala.bson.BsonDocument
 import org.scalatest.funsuite.AnyFunSuite
 

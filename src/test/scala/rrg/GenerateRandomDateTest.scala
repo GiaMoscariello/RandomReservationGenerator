@@ -1,6 +1,5 @@
 package rrg
 
-import com.giamoscariello.rrg.service.GenerateRandomDate
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.concurrent.Await
