@@ -1,6 +1,7 @@
 package com.giamoscariello.rrg.repository.mongo
 
 import cats.effect.{IO, Resource, Sync}
+import com.giamoscariello.rrg.configuration.MongoConf
 import com.mongodb.MongoClientSettings
 import com.typesafe.config.ConfigFactory
 import org.mongodb.scala.connection.ClusterSettings.Builder
@@ -15,7 +16,7 @@ object MongoDB {
   def makeClient[F[_]](implicit F: Sync[IO]): Resource[IO, MongoClient] =
     Resource.make(
       F.delay{
-        val config = ConfigFactory.load("private.conf")
+        val config = ConfigFactory.load("local.conf")
         createMongoClient(
           MongoConf(
             servers = config.getStringList("mongo-server-address").asScala.toList,

@@ -1,29 +1,26 @@
 package com.giamoscariello.rrg.model
 
-case class Reservation(user: User, in: ReservationDate, out: ReservationDate, location: Location)
+import java.time.LocalDate
+import scala.util.Random
 
-case class User(name: String, surname: String, mail: String, phone: String)
+case class Reservation(user: User, dates: ReservationDates, location: Location) extends Serializable
 
-case class ReservationDate(day: Int, month: Int, year: Int)
+case class User(name: String, surname: String, mail: String, phone: String) extends Serializable
 
-case class Location(name: String)
+case class ReservationDate(day: Int, month: Int, year: Int) extends Serializable
 
-case class Person(name: String, surname: String)
+case class ReservationDates(dateIn: LocalDate, dateOut: LocalDate)
 
-object ReservationDate {
-  val daysInAMonth: Map[Int, Int] = Map(
-    1 -> 31,
-    2 -> 29,
-    3 -> 31,
-    4 -> 30,
-    5 -> 31,
-    6 -> 30,
-    7 -> 31,
-    8 -> 31,
-    9 -> 30,
-    10 -> 31,
-    11 -> 30,
-    12 -> 31
-  )
+case class Location(name: String) extends Serializable
+
+case class Person(name: String, surname: String) extends Serializable
+
+object ReservationDates {
+  def apply: ReservationDates = {
+    val start = LocalDate.of(2017, 1, 20)
+    val end = LocalDate.now
+    val dateIn = LocalDate.ofEpochDay(Random.between(start.toEpochDay, end.toEpochDay))
+    val dateOut = dateIn.plusWeeks(1)
+    ReservationDates(dateIn, dateOut)
+  }
 }
-

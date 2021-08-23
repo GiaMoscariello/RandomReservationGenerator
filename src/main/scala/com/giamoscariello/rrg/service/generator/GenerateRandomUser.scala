@@ -1,4 +1,4 @@
-package com.giamoscariello.rrg.service.generators
+package com.giamoscariello.rrg.service.generator
 
 import com.giamoscariello.rrg.model.{DataSample, User}
 
@@ -20,5 +20,5 @@ case class GenerateRandomUser(datas: List[DataSample]) {
 
   private def generateRandomPhone: Option[String] = Some("340" + Random.nextInt(999999).toString)
 
-  private def randomDataFrom(names: Option[DataSample]): Option[String] = names.map(x => Random.shuffle(x.list).head)
+  private def randomDataFrom(samples: Option[DataSample]): Option[String] = samples.map(x => Random.shuffle(x.list).head)
 }
