@@ -7,9 +7,11 @@ import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.{Document, MongoCollection}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
 case class MongoStore(collection: MongoCollection[Document]) {
+  val ec: ExecutionContextExecutor = ExecutionContext.global
+  val cs: ContextShift[IO] = IO.contextShift(ec)
 
   def dataSamples: IO[List[DataSample]] = {
     val dbExecutionContext = ExecutionContext.global

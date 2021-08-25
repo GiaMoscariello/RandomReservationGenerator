@@ -16,7 +16,7 @@ object MongoDB {
   def makeClient[F[_]](implicit F: Sync[IO]): Resource[IO, MongoClient] =
     Resource.make(
       F.delay{
-        val config = ConfigFactory.load("local.conf")
+        val config = ConfigFactory.load("mongo.conf")
         createMongoClient(
           MongoConf(
             servers = config.getStringList("mongo-server-address").asScala.toList,

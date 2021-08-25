@@ -15,8 +15,10 @@ case class Location(name: String) extends Serializable
 
 case class Person(name: String, surname: String) extends Serializable
 
+case class Key(id: String) extends Serializable
+
 object ReservationDates {
-  def apply: ReservationDates = {
+  def generate: ReservationDates = {
     val start = LocalDate.of(2017, 1, 20)
     val end = LocalDate.now
     val dateIn = LocalDate.ofEpochDay(Random.between(start.toEpochDay, end.toEpochDay))
