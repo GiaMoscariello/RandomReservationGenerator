@@ -4,16 +4,14 @@ import cats.effect.{ContextShift, IO}
 import com.giamoscariello.rrg.model.DataSample
 import org.bson.BsonDocument
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.{Document, MongoCollection}
+import org.mongodb.scala.{Document, MongoClient, MongoCollection}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
-case class MongoStore(collection: MongoCollection[Document]) {
-  val ec: ExecutionContextExecutor = ExecutionContext.global
-  val cs: ContextShift[IO] = IO.contextShift(ec)
+case class MongoStore(client: MongoClient) {
 
-  def dataSamples: IO[List[DataSample]] = {
+  lazy val getAllDataSamples: IO[List[DataSample]] = {
     val dbExecutionContext = ExecutionContext.global
     implicit val contextShift: ContextShift[IO] = IO.contextShift(dbExecutionContext)
     IO.fromFuture(findAllDataType)
@@ -31,6 +29,8 @@ case class MongoStore(collection: MongoCollection[Document]) {
       docs <- collection.find[BsonDocument](equal("dataType", filter))
       data = DataSample(docs)
     } yield data).head
-
   }
+
+  private def collection: MongoCollection[BsonDocument] =
+    client.getDatabase("RandomReservationGens").getCollection("DataSamples")
 }

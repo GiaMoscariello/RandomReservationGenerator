@@ -1,39 +1,25 @@
 package com.giamoscariello.rrg.service.generator
 
+import cats.effect.IO
+import cats.implicits.toTraverseOps
 import com.giamoscariello.rrg.model._
-import io.circe.Json
-import io.circe.generic.auto._
-import io.circe.syntax.EncoderOps
 
-import java.time.LocalDate
-import java.util.Date
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.{Failure, Random, Success, Try}
+import scala.util.Random
 
-case class GenerateRandomReservation(datas: List[DataSample]) {
+case class GenerateRandomReservation(datas: List[DataSample], keys: List[Key]) {
 
-  def make(n: Int): Unit =
-    for (_ <- 1 to n) {
-      makeReservation.onComplete {
-        Thread.sleep(1)
+  def mkReservationRecords: IO[List[KafkaRecord]] =
+    keys.map { k => makeReservation.map(r => KafkaRecord(k,r))}
+      .sequence
 
-        {
-          case Success(y) => println(y.asJson)
-          case Failure(e) => (e.printStackTrace())
-        }
-
-      }
-    }
-
-  def makeReservation: Future[Reservation] = for {
+  def makeReservation: IO[Reservation] = (for {
     user      <- GenerateRandomUser(datas).make
     location  <- generateRandomLocation
     dates     = ReservationDates.generate
-  } yield Reservation(user, dates, location)
+  } yield Reservation(user, dates, location))
 
-  private def generateRandomLocation: Future[Location] = {
+  private def generateRandomLocation: IO[Location] = {
     val randomLocation: String = Random.shuffle(DataSamples.locations).head
-    Future(Location(randomLocation))
+    IO(Location(randomLocation))
   }
 }
