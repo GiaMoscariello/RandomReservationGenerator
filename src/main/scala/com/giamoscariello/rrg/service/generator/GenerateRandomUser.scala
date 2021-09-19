@@ -6,7 +6,7 @@ import com.giamoscariello.rrg.model.{DataSample, User}
 import scala.util.Random
 
 
-case class GenerateRandomUser(datas: List[DataSample]) {
+case class GenerateRandomUser(datas: Seq[DataSample]) {
   def make: IO[User] = {
     IO.fromOption(for {
       name <- randomDataFrom(dataSampleListOf("names"))

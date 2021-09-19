@@ -28,9 +28,9 @@ object App extends IOApp {
     }
   }
 
-  private def makeDeps: Resource[IO, Dependencies[Key, Reservation]] =
+  private def makeDeps(implicit logger: Logger): Resource[IO, Dependencies] =
     for {
-      mongoClient   <- MongoDB.makeClient[IO]
+      mongoClient   <- MongoDB.makeMongoClient[IO]
       kafkaProducer <- KafkaReservationProducer.makeKafkaProducer[IO]
     } yield Dependencies(mongoClient, kafkaProducer)
 }

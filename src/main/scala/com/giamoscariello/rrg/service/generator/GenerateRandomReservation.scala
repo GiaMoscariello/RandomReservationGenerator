@@ -6,7 +6,9 @@ import com.giamoscariello.rrg.model._
 
 import scala.util.Random
 
-case class GenerateRandomReservation(datas: List[DataSample], keys: List[Key]) {
+
+//TODO: why using IO???
+case class GenerateRandomReservation(datas: Seq[DataSample], keys: List[Key]) {
 
   def mkReservationRecords: IO[List[KafkaRecord]] =
     keys.map { k => makeReservation.map(r => KafkaRecord(k,r))}
@@ -19,7 +21,9 @@ case class GenerateRandomReservation(datas: List[DataSample], keys: List[Key]) {
   } yield Reservation(user, dates, location))
 
   private def generateRandomLocation: IO[Location] = {
-    val randomLocation: String = Random.shuffle(DataSamples.locations).head
+    val locations = datas.find((dt: DataSample) => dt.dataType == "locations").getOrElse(DataSample.empty)
+
+    val randomLocation: String = Random.shuffle(locations.list).head
     IO(Location(randomLocation))
   }
 }

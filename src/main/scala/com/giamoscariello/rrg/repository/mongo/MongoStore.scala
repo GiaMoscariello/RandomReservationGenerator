@@ -2,33 +2,29 @@ package com.giamoscariello.rrg.repository.mongo
 
 import cats.effect.{ContextShift, IO}
 import com.giamoscariello.rrg.model.DataSample
-import org.bson.BsonDocument
-import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.{Document, MongoClient, MongoCollection}
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.{MongoClient, MongoCollection}
+import org.slf4j.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-case class MongoStore(client: MongoClient) {
 
-  lazy val getAllDataSamples: IO[List[DataSample]] = {
+//TODO: There is a lot of refactor available here
+case class MongoStore(client: MongoClient)(implicit logger: Logger) {
+
+  def getAllDataSamples: IO[Seq[DataSample]] = {
     val dbExecutionContext = ExecutionContext.global
     implicit val contextShift: ContextShift[IO] = IO.contextShift(dbExecutionContext)
-    IO.fromFuture(findAllDataType)
+
+    IO.fromFuture(findAll())
   }
 
-  def findAllDataType: IO[Future[List[DataSample]]] =
-    IO.delay(for {
-      names <- findDataTypeBy("names")
-      surnames <- findDataTypeBy("surnames")
-      locations <- findDataTypeBy("locations")
-    } yield List(names, surnames, locations))
-
-  def findDataTypeBy(filter: String): Future[DataSample] = {
-    (for {
-      docs <- collection.find[BsonDocument](equal("dataType", filter))
-      data = DataSample(docs)
-    } yield data).head
+  private def findAll(): IO[Future[Seq[DataSample]]] = {
+      IO.delay(for {
+        all <- collection.find[BsonDocument].toFuture
+        list = all.map (doc => DataSample(doc))
+      } yield list)
   }
 
   private def collection: MongoCollection[BsonDocument] =

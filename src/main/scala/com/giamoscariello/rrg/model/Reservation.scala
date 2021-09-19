@@ -1,9 +1,6 @@
 package com.giamoscariello.rrg.model
 
-import cats.effect.IO
-
 import java.time.LocalDate
-import scala.::
 import scala.util.Random
 
 case class Reservation(user: User, dates: ReservationDates, location: Location) extends Serializable
@@ -35,7 +32,7 @@ object ReservationDates {
 object Key {
   def batchKeyList: List[Key] = {
     var list = List[Key]()
-    for (i <- 1 to 100)
+    for (i <- 1 to 1)
       list = addKey(list, Key(i + "_" + java.util.UUID.randomUUID.toString))
     list
   }
