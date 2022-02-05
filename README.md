@@ -1,2 +1,2 @@
 # RandomReservationGenerator
-Generate random reservation 
+Just a study playground :)
