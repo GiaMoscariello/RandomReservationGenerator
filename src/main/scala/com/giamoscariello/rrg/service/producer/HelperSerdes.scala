@@ -6,9 +6,6 @@ import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerialize
 import org.apache.avro.generic.IndexedRecord
 import org.apache.kafka.common.serialization.{Deserializer, Serializer}
 
-/**
- * Created by loicmdivad.
- */
 trait HelperSerdes {
 
     implicit lazy val keyFormat:    RecordFormat[Key] = RecordFormat[Key]

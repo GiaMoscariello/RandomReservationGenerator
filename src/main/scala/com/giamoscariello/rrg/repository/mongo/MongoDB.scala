@@ -12,12 +12,11 @@ import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 
 object MongoDB {
-
-  def makeClient[F[_]](implicit F: Sync[IO]): Resource[IO, MongoClient] =
+  def makeMongoClient[F[_]](implicit F: Sync[IO]): Resource[IO, MongoClient] =
     Resource.make(
       F.delay{
         val config = ConfigFactory.load("mongo.conf")
-        createMongoClient(
+        fromConfig(
           MongoConf(
             servers = config.getStringList("mongo-server-address").asScala.toList,
             port = config.getInt("mongo-server-port"),
@@ -28,7 +27,7 @@ object MongoDB {
       }
     )(x => IO(x.close()))
 
-  private def createMongoClient(conf: MongoConf): MongoClient = {
+  private def fromConfig(conf: MongoConf): MongoClient = {
     val builder = MongoClientSettings
       .builder()
       .applyToSocketSettings(ssb => ssb.applySettings(
