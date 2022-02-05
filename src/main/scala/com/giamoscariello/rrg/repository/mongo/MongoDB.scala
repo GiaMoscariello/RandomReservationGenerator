@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 
 object MongoDB {
-
   def makeMongoClient[F[_]](implicit F: Sync[IO]): Resource[IO, MongoClient] =
     Resource.make(
       F.delay{
