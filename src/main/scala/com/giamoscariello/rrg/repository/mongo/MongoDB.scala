@@ -3,7 +3,7 @@ package com.giamoscariello.rrg.repository.mongo
 import cats.effect.{IO, Resource, Sync}
 import com.giamoscariello.rrg.configuration.MongoConf
 import com.mongodb.MongoClientSettings
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import org.mongodb.scala.connection.ClusterSettings.Builder
 import org.mongodb.scala.connection.{ClusterSettings, SocketSettings}
 import org.mongodb.scala.{MongoClient, MongoCredential, ServerAddress}
@@ -12,10 +12,9 @@ import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 
 object MongoDB {
-  def makeMongoClient[F[_]](implicit F: Sync[IO]): Resource[IO, MongoClient] =
+  def makeMongoClient[F[_]](config: Config)(implicit F: Sync[IO]): Resource[IO, MongoClient] =
     Resource.make(
       F.delay{
-        val config = ConfigFactory.load("mongo.conf")
         fromConfig(
           MongoConf(
             servers = config.getStringList("mongo-server-address").asScala.toList,

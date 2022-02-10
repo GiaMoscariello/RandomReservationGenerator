@@ -6,11 +6,8 @@ case class KafkaRecord(k: Key, v: Reservation) extends Serializable
 
 object Key {
   def batchKeyList(n: Int): List[Key] = {
-    var list = List[Key]()
-    for (i <- 1 to n)
-      list = addKey(list, Key(i + "_" + java.util.UUID.randomUUID.toString))
-    list
+    Range(1, n)
+      .map(i => Key(i + "_" + java.util.UUID.randomUUID.toString.subSequence(0, 8)))
+      .toList
   }
-
-  private def addKey(l: List[Key], k: Key): List[Key] = k :: l
 }
