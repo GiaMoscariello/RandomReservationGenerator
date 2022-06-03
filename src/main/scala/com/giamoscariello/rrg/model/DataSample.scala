@@ -21,7 +21,10 @@ object DataSample {
   implicit val surnames: Surname = Surname()
 
   implicit val locations: Location = Location()
+
+  val allType: Seq[DataType] = Seq(names, surnames, locations)
 }
+
 trait DataType{
   val id: String
 }
@@ -29,9 +32,11 @@ trait DataType{
  case class Name() extends DataType {
   override val id: String = "names"
 }
+
 case class Surname() extends DataType {
   override val id: String = "surnames"
 }
+
 case class Location() extends DataType {
   override val id: String = "locations"
 }

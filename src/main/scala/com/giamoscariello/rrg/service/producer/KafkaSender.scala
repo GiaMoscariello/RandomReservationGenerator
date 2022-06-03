@@ -14,7 +14,7 @@ import scala.language.postfixOps
 case class KafkaSender(producer: KafkaProducer[Key, Reservation]) {
   implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   def sendRecords(records: List[KafkaRecord], topic: String)(implicit logger: Logger): IO[List[RecordMetadata]] = {
-      IO.delay( records.map { record =>
+      IO.delay(records.map { record =>
         val producerRecord = new ProducerRecord[Key, Reservation](topic, record.k, record.v)
         logger info s"Try to sending record with key: ${record.k.id} and body:${record.v.asJson}"
         producer.send(producerRecord, new Callback() {

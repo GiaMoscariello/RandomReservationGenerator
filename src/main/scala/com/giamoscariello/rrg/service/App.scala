@@ -38,12 +38,12 @@ object App extends IOApp {
           case Right(records) => kafkaSender.sendRecords(records, "reservationsMade")
         }
     }
+
   val computation = Kleisli[IO, Config, List[RecordMetadata]](program)
 
   override def run(args: List[String]): IO[ExitCode] = {
     val config = ConfigFactory.load("application.conf")
 
-    Kleisli[IO, Config, List[RecordMetadata]](program)
-      .run(config) *> IO{ExitCode.Success}
+     computation.run(config) *> IO{ExitCode.Success}
   }
 }

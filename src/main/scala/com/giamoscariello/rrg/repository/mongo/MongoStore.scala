@@ -32,7 +32,8 @@ case class MongoStore(client: MongoClient)(implicit logger: Logger) {
       IO.delay(collection
         .find(equal("dataType", dataType.id))
         .projection(Projections.fields(Projections.include("list"), Projections.excludeId()))
-        .head()))
+        .head())
+    )
   }
 
   def toDataSample[T <: DataType](doc: BsonDocument): IO[Either[Throwable, DataSample]] = {

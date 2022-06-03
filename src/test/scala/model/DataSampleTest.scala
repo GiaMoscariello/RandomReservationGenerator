@@ -48,4 +48,14 @@ class DataSampleTest extends AnyFunSuite {
       data <- json.as[DataSample]
     } yield data)
   }
+
+  test("valid anagram") {
+    val s1 = "garden!"
+    val s2 = "dang!er"
+    assert(anagram(s1, s2))
+  }
+
+  def anagram(s1: String, s2: String): Boolean = 
+    s1.sorted.toLowerCase == s2.sorted.toLowerCase
+
 }

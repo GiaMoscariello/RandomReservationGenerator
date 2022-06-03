@@ -11,7 +11,7 @@ import org.mongodb.scala.{MongoClient, MongoCredential, ServerAddress}
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 
-object MongoDB {
+case object MongoDB {
   def makeMongoClient[F[_]](config: Config)(implicit F: Sync[IO]): Resource[IO, MongoClient] =
     Resource.make(
       F.delay{
