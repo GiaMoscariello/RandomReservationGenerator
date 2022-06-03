@@ -1,42 +1,49 @@
 package com.giamoscariello.rrg.service
 
-import cats.effect.{ExitCode, IO, IOApp, Resource}
+import cats.data.Kleisli
+import cats.effect.{ExitCode, IO, IOApp}
 import com.giamoscariello.rrg.configuration.Dependencies
-import com.giamoscariello.rrg.model.DataSampled.{locations, names, surnames}
-import com.giamoscariello.rrg.model.{Location, Name, Surname}
-import com.giamoscariello.rrg.repository.mongo.{MongoDB, MongoStore}
+import com.giamoscariello.rrg.model.DataSample.{locations, names, surnames}
+import com.giamoscariello.rrg.model._
+import com.giamoscariello.rrg.repository.mongo.MongoStore
 import com.giamoscariello.rrg.service.generator.ReservationListGenerator
-import com.giamoscariello.rrg.service.producer.{KafkaReservationProducer, KafkaSender}
-import org.apache.kafka.streams.KafkaStreams
+import com.giamoscariello.rrg.service.producer.KafkaSender
+import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.language.postfixOps
 
 object App extends IOApp {
-  override def run(args: List[String]): IO[ExitCode] = {
-      implicit val logger: Logger = LoggerFactory.getLogger(this.getClass.getName)
-      program.as(ExitCode.Success)
-    }
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  private def program(implicit logger: Logger) = {
-    makeDeps.use {
+  val program: Config => IO[List[RecordMetadata]] = (conf: Config) => Dependencies
+    .make(conf)
+    .use {
       deps =>
-        val mongoStore  = MongoStore(deps.mongoClient)
+        val mongoStore = MongoStore(deps.mongoClient)
         val kafkaSender = KafkaSender(deps.kafkaProducer)
-
-        for {
-          names                 <- mongoStore.queryCollectionForDataType[Name]
-          surnames              <- mongoStore.queryCollectionForDataType[Surname]
-          locations             <- mongoStore.queryCollectionForDataType[Location]
-          reservationRecords    = ReservationListGenerator(names, surnames, locations, 100).make()
-        } yield reservationRecords
-          .map(records => kafkaSender.sendRecords(records, "reservations"))
+        (for {
+          nameData      <- mongoStore.queryCollectionFor[Name]
+          surnameData   <- mongoStore.queryCollectionFor[Surname]
+          locationData  <- mongoStore.queryCollectionFor[Location]
+          comp = for {
+            names <- nameData
+            surnames <- surnameData
+            locations <- locationData
+            randomReservations = ReservationListGenerator(names, surnames, locations, 100).make()
+          } yield randomReservations
+        } yield comp).flatMap {
+          case Left(t) => IO.raiseError(t)
+          case Right(records) => kafkaSender.sendRecords(records, "reservationsMade")
+        }
     }
-  }
 
-  private def makeDeps(implicit logger: Logger): Resource[IO, Dependencies] =
-    for {
-      mongoClient   <- MongoDB.makeMongoClient[IO]
-      kafkaProducer <- KafkaReservationProducer.makeKafkaProducer[IO]
-    } yield Dependencies(mongoClient, kafkaProducer)
+  val computation = Kleisli[IO, Config, List[RecordMetadata]](program)
+
+  override def run(args: List[String]): IO[ExitCode] = {
+    val config = ConfigFactory.load("application.conf")
+
+     computation.run(config) *> IO{ExitCode.Success}
+  }
 }

@@ -1,17 +1,13 @@
 package com.giamoscariello.rrg.service.generator
 
 import cats.implicits.toTraverseOps
-import com.giamoscariello.rrg.model.{DataSampled, KafkaRecord, Key, Reservation, ReservationDates, Room, User}
+import com.giamoscariello.rrg.model.{DataSample, KafkaRecord, Key, Reservation, ReservationDates, Room, User}
 
 import scala.collection.immutable._
 import scala.util.Random
 
-trait Generator {
-  def make(): Option[_]
-}
-
-case class ReservationListGenerator(names: DataSampled[String], surnames: DataSampled[String], locations: DataSampled[String], size: Int)  extends Generator {
-  override def make(): Option[List[KafkaRecord]] = Key
+case class ReservationListGenerator(names: DataSample, surnames: DataSample, locations: DataSample, size: Int) {
+   def make(): List[KafkaRecord] = Key
     .batchKeyList(size)
     .map { key =>
       for {
@@ -20,9 +16,10 @@ case class ReservationListGenerator(names: DataSampled[String], surnames: DataSa
       } yield KafkaRecord(key, reservation)
     }
     .sequence
+     .get
 }
 
-case class UserGenerator(names: DataSampled[String], surnames: DataSampled[String]) extends Generator {
+case class UserGenerator(names: DataSample, surnames: DataSample) {
   def make(): Option[User] = {
     for {
       name      <- names.randomize()
@@ -36,8 +33,8 @@ case class UserGenerator(names: DataSampled[String], surnames: DataSampled[Strin
   private def generateRandomPhone: String = "340" + Random.nextInt(999999).toString
 }
 
-case class ReservationGenerator(user: User, locations: DataSampled[String]) extends Generator {
-  override def make(): Option[Reservation] = {
+case class ReservationGenerator(user: User, locations: DataSample) {
+   def make(): Option[Reservation] = {
     for {
       location  <- locations.randomize()
       dates     = ReservationDates.generate
